@@ -1,6 +1,7 @@
 import bjorkPost from './data/bjork-post.json';
 import ladyGagaTheFame from './data/lady-gaga-the-fame.json';
 import glassAnimalsHowToBeAMHumanBeing from './data/glass-animals-how-to-be.json';
+import fs from 'node:fs/promises';
 
 /**
  * @typedef Song
@@ -20,12 +21,13 @@ const artificialWait = (ms = 200) => new Promise((resolve) => setTimeout(resolve
 
 /** @returns {Promise<Album[]>} */
 export async function getAll() {
-	await artificialWait();
-	return albums;
+  await fs.readdir('./');
+  await artificialWait();
+  return albums;
 }
 
 /** @returns {Promise<Album | undefined>} */
 export async function getById(id) {
-	await artificialWait();
-	return albums.find((album) => album.id === id);
+  await artificialWait();
+  return albums.find((album) => album.id === id);
 }

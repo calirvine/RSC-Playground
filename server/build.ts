@@ -1,7 +1,13 @@
-import { build as esbuild } from 'esbuild';
+import { BuildOptions, build as esbuild } from 'esbuild';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { resolveClientDist, resolveDist, resolveSrc, writeClientComponentMap } from './utils.js';
+import {
+  BundleMap,
+  resolveClientDist,
+  resolveDist,
+  resolveSrc,
+  writeClientComponentMap
+} from './utils.ts';
 
 const USE_CLIENT_ANNOTATIONS = ['"use client"', "'use client'"];
 const JSX_EXTS = ['.jsx', '.tsx'];
@@ -11,18 +17,13 @@ const relativeOrAbsolutePathRegex = /^\.{0,2}\//;
  * Build all server and client components with esbuild
  */
 export async function build() {
-  /**
-   * Mapping from client-side component ID to React metadata.
-   * This is read by the server when generating the RSC stream.
-   * @type {Record<string, any>}
-   */
-  const clientComponentMap = {};
+  const clientComponentMap: BundleMap = {};
 
   /**
    * Discovered client modules to bundle with esbuild separately.
    * @type {Set<string>}
    */
-  const clientEntryPoints = new Set();
+  const clientEntryPoints = new Set<string>();
 
   console.log('🏗️ Building server components');
   const serverDist = resolveDist('server/');
@@ -31,7 +32,7 @@ export async function build() {
   }
 
   /** @type {import('esbuild').BuildOptions} */
-  const sharedConfig = {
+  const sharedConfig: Pick<BuildOptions, 'bundle' | 'format' | 'logLevel'> = {
     bundle: true,
     format: 'esm',
     logLevel: 'error'
@@ -99,9 +100,11 @@ export async function build() {
     console.log('🏝 Building client components');
   }
 
+  const entryPoints = [...clientEntryPoints, fileURLToPath(resolveSrc('_router/index.js'))];
+
   await esbuild({
     ...sharedConfig,
-    entryPoints: [...clientEntryPoints, fileURLToPath(resolveSrc('_router/index.js'))],
+    entryPoints,
     outdir: fileURLToPath(clientDist),
     splitting: true
   });
